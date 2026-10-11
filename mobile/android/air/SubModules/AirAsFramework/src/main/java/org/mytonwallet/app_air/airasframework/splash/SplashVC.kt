@@ -990,7 +990,7 @@ class SplashVC(context: Context) :
                         null,
                         if (!account.isMainnet) {
                             LocaleController.getString("Swap is not supported in Testnet.")
-                        } else if (AccountStore.activeAccount?.isHardware == true) {
+                        } else if (AccountStore.activeAccount?.isLedger == true) {
                             LocaleController.getString("Swap is not yet supported by Ledger.")
                         } else {
                             LocaleController.getString("Swap is not supported on this account.")

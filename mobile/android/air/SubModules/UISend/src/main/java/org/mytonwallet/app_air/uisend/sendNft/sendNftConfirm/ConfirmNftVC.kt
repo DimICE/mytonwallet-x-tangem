@@ -67,6 +67,7 @@ import org.mytonwallet.app_air.walletbasecontext.utils.replaceSpacesWithNbsp
 import org.mytonwallet.app_air.walletbasecontext.utils.smartDecimalsCount
 import org.mytonwallet.app_air.walletbasecontext.utils.toString
 import org.mytonwallet.app_air.walletcontext.utils.CoinUtils
+import org.mytonwallet.app_air.walletcore.TangemBridge
 import org.mytonwallet.app_air.walletcore.WalletCore
 import org.mytonwallet.app_air.walletcore.WalletEvent
 import org.mytonwallet.app_air.walletcore.models.MBridgeError
@@ -630,7 +631,7 @@ class ConfirmNftVC(
 
     private fun confirmSend() {
         if (isAutoConfirmSubmitting) return
-        if (account?.isHardware == true) {
+        if (account?.isLedger == true) {
             val tonAddress = account.tonAddress ?: run {
                 Logger.e(
                     Logger.LogTag.SEND,
@@ -661,6 +662,11 @@ class ConfirmNftVC(
                     headerView = headerView
                 )
             )
+        } else if (account?.isTangem == true) {
+            isAutoConfirmSubmitting = true
+            view.lockView()
+            confirmButton.isLoading = true
+            submitNftTransfer("", false)
         } else {
             ProtectedActionAuth.confirm(
                 onConfirmed = { token ->
@@ -720,6 +726,13 @@ class ConfirmNftVC(
                 })
             }
         )
+    }
+
+    override fun onDestroy() {
+        if (isAutoConfirmSubmitting && account?.isTangem == true) {
+            TangemBridge.handler?.cancel()
+        }
+        super.onDestroy()
     }
 
     private val headerView: View

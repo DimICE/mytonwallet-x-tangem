@@ -50,7 +50,7 @@ function assertInitializationAccount(
   current: ApiAccountInitialization,
   account: Awaited<ReturnType<typeof fetchMaybeStoredAccount>>,
 ) {
-  const type = account?.type === 'ledger' ? 'hardware'
+  const type = account?.type === 'ledger' || account?.type === 'tangem' ? 'hardware'
     : account?.type === 'view' ? 'view'
       : account?.type === 'ton' || account?.type === 'bip39' ? 'mnemonic' : undefined;
   const identities = Object.entries(current.addressByChain) as [ApiChain, string][];

@@ -54,6 +54,7 @@ import org.mytonwallet.app_air.walletbasecontext.utils.toString
 import org.mytonwallet.app_air.walletcontext.utils.CoinUtils
 import org.mytonwallet.app_air.walletcontext.utils.PriceConversionUtils
 import org.mytonwallet.app_air.walletcore.TONCOIN_SLUG
+import org.mytonwallet.app_air.walletcore.TangemBridge
 import org.mytonwallet.app_air.walletcore.WalletCore
 import org.mytonwallet.app_air.walletcore.WalletEvent
 import org.mytonwallet.app_air.walletcore.models.MAccount
@@ -131,7 +132,7 @@ class StakingVC(
         val wButton = WButton(context, WButton.Type.PRIMARY)
         wButton.setOnClickListener {
             if (stakingViewModel.canProceedToConfirm()) {
-                if (AccountStore.activeAccount?.isHardware == true) {
+                if (AccountStore.activeAccount?.isLedger == true) {
                     confirmHardware()
                 } else {
                     pushConfirmView()
@@ -539,6 +540,13 @@ class StakingVC(
             "pushConfirmView: mode=$mode tokenSlug=${stakingViewModel.tokenSlug}"
         )
         view.hideKeyboard()
+        if (AccountStore.activeAccount?.isTangem == true) {
+            isAutoConfirmSubmitting = true
+            view.lockView()
+            stakeButton.isLoading = true
+            stakingViewModel.onStakeConfirmed("")
+            return
+        }
         ProtectedActionAuth.confirm(
             onConfirmed = { token ->
                 isAutoConfirmSubmitting = true
@@ -562,6 +570,13 @@ class StakingVC(
             }
         )
         push(passcodeConfirmVC)
+    }
+
+    override fun onDestroy() {
+        if (isAutoConfirmSubmitting && AccountStore.activeAccount?.isTangem == true) {
+            TangemBridge.handler?.cancel()
+        }
+        super.onDestroy()
     }
 
     private fun showWhySafeAlert() {

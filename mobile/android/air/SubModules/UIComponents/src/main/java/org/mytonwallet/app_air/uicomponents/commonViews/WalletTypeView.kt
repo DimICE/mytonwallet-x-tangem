@@ -234,12 +234,16 @@ open class WalletTypeView(context: Context, blurredBackground: Boolean = false) 
     private fun configureHardwareTagView() {
         isGone = false
         viewTagView?.isGone = true
-        if (hardwareTagView == null) {
-            hardwareDrawable = context.getDrawableCompat(
+        hardwareDrawable = context.getDrawableCompat(
+            if (account?.isTangem == true) {
+                org.mytonwallet.app_air.icons.R.drawable.ic_wallet_tangem
+            } else {
                 org.mytonwallet.app_air.icons.R.drawable.ic_wallet_ledger
-            )?.mutate()?.apply {
-                setTint(color)
             }
+        )?.mutate()?.apply {
+            setTint(color)
+        }
+        if (hardwareTagView == null) {
             hardwareTagView = AppCompatImageView(context).apply {
                 setImageDrawable(hardwareDrawable)
             }
@@ -249,6 +253,7 @@ open class WalletTypeView(context: Context, blurredBackground: Boolean = false) 
             )
         } else {
             hardwareTagView?.isGone = false
+            hardwareTagView?.setImageDrawable(hardwareDrawable)
         }
         background = null
         walletTypeBlurView?.isVisible = false

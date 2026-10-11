@@ -44,6 +44,7 @@ import org.mytonwallet.app_air.walletbasecontext.theme.color
 import org.mytonwallet.app_air.walletbasecontext.utils.smartDecimalsCount
 import org.mytonwallet.app_air.walletbasecontext.utils.toString
 import org.mytonwallet.app_air.walletcore.TONCOIN_SLUG
+import org.mytonwallet.app_air.walletcore.TangemBridge
 import org.mytonwallet.app_air.walletcore.WalletCore
 import org.mytonwallet.app_air.walletcore.models.MBridgeError
 import org.mytonwallet.app_air.walletcore.models.blockchain.MBlockchain
@@ -297,8 +298,14 @@ class LinkToWalletVC(context: Context, val nft: ApiNft) : WViewController(contex
     }
 
     private fun onRenewPressed() {
-        if (AccountStore.activeAccount?.isHardware == true) {
+        if (AccountStore.activeAccount?.isLedger == true) {
             submitDnsChangeWithHardware()
+        } else if (AccountStore.activeAccount?.isTangem == true) {
+            val accountId = AccountStore.activeAccountId ?: return
+            val address = address ?: return
+            linkButton.lockView()
+            linkButton.isLoading = true
+            submitDnsChange(accountId, address, "", null)
         } else {
             submitDnsChangeWithPassword()
         }
@@ -470,6 +477,9 @@ class LinkToWalletVC(context: Context, val nft: ApiNft) : WViewController(contex
     }
 
     override fun onDestroy() {
+        if (linkButton.isLoading && AccountStore.activeAccount?.isTangem == true) {
+            TangemBridge.handler?.cancel()
+        }
         super.onDestroy()
 
         addressInputView.removeTextChangedListener(onInputDestinationTextWatcher)

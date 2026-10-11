@@ -3,6 +3,23 @@ $auth_intro: |
   совершайте платежи в блокчейне
   **со скоростью света**.
 Create New Wallet: Создать новый кошелёк
+TangemCancelled: NFC-сессия отменена.
+TangemUnavailable: Включите NFC на Android-устройстве для работы с Tangem.
+TangemBusy: Другая сессия Tangem ещё не завершена.
+TangemWrongCard: Приложите карту Tangem, с которой добавлен этот кошелёк.
+TangemUnsupportedCard: На карте нет доступного ключа Ed25519 или она не поддерживает выбранный путь derivation.
+TangemInvalidSignature: Не удалось проверить подпись Tangem. Отправка не выполнена.
+TangemInvalidWallet: Ключ, путь derivation или версия кошелька не соответствуют выбранному TON-адресу.
+TangemUnsupportedOperation: Этот кошелёк Tangem не поддерживает данную операцию.
+TangemFailed: Операция Tangem завершилась ошибкой. Приложите карту ещё раз.
+Scan Tangem Card: Сканировать карту Tangem
+Automatic: Автоматически
+Custom: Свой путь
+Card key without derivation: Ключ карты без derivation
+Derivation path: Путь derivation
+Wallet version: Версия кошелька
+Existing TON address: Существующий TON-адрес
+Use the same derivation path and wallet version as in Tangem to access your existing address.: Для доступа к существующему адресу укажите тот же путь derivation и версию кошелька, что и в Tangem.
 Import From %count% Secret Words: Восстановить из %count% секретных слов
 More about %app_name%: Подробнее о %app_name%
 Creating Wallet...: Создаём кошелёк...

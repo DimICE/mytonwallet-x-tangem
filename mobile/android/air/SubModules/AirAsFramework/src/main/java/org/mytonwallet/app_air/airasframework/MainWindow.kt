@@ -9,6 +9,7 @@ import android.view.MotionEvent
 import androidx.core.content.ContextCompat
 import org.mytonwallet.app_air.airasframework.splash.SplashVC
 import org.mytonwallet.app_air.native_enclave.EnclaveManager
+import org.mytonwallet.app_air.tangem.TangemManager
 import org.mytonwallet.app_air.uicomponents.base.WNavigationController
 import org.mytonwallet.app_air.uicomponents.base.WWindow
 import org.mytonwallet.app_air.uicomponents.extensions.dp
@@ -26,6 +27,7 @@ import org.mytonwallet.app_air.walletcontext.WalletContextManager
 import org.mytonwallet.app_air.walletcontext.cacheStorage.WCacheStorage
 import org.mytonwallet.app_air.walletcontext.globalStorage.WGlobalStorage
 import org.mytonwallet.app_air.walletcontext.helpers.AutoLockHelper
+import org.mytonwallet.app_air.walletcore.TangemBridge
 import org.mytonwallet.app_air.walletcore.WalletCore
 import org.mytonwallet.app_air.walletcore.WalletEvent
 import org.mytonwallet.app_air.walletcore.api.cleanupPendingLegacyAuth
@@ -36,6 +38,7 @@ import org.mytonwallet.uihome.tabletTabs.TabletTabsVC
 import org.mytonwallet.uihome.tabs.PhoneTabsVC
 
 class MainWindow : WWindow() {
+    private val tangemManager by lazy { TangemManager(this) }
     private var isBridgeUser = false
     private val splashVC by lazy {
         val vc = SplashVC(this)
@@ -81,6 +84,7 @@ class MainWindow : WWindow() {
         WalletCore.cleanupPendingLegacyAuth()
 
         WalletCore.incBridgeUsers()
+        TangemBridge.handler = tangemManager
         isBridgeUser = true
         restartBridge(forcedRecreation = false)
 

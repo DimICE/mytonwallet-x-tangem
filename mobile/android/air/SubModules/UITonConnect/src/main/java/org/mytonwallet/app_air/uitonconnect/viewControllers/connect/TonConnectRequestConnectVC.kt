@@ -46,6 +46,7 @@ import org.mytonwallet.app_air.walletcontext.globalStorage.WGlobalStorage
 import org.mytonwallet.app_air.walletcontext.models.MBlockchainNetwork
 import org.mytonwallet.app_air.walletcore.JSWebViewBridge
 import org.mytonwallet.app_air.walletcore.TON_CHAIN
+import org.mytonwallet.app_air.walletcore.TangemBridge
 import org.mytonwallet.app_air.walletcore.WalletCore
 import org.mytonwallet.app_air.walletcore.WalletEvent
 import org.mytonwallet.app_air.walletcore.api.activateAccount
@@ -251,8 +252,14 @@ class TonConnectRequestConnectVC(
                 return@setOnClickListener
             }
 
-            if (account.isHardware) {
+            if (account.isLedger) {
                 confirmHardware()
+            } else if (account.isTangem) {
+                buttonView.isLoading = true
+                connectConfirm(update.promiseId, "") { error ->
+                    buttonView.isLoading = false
+                    if (error == null) window?.dismissLastNav() else showError(error)
+                }
             } else {
                 confirmPasscode()
             }
@@ -657,6 +664,9 @@ class TonConnectRequestConnectVC(
     }
 
     override fun onDestroy() {
+        if (buttonView.isLoading && AccountStore.activeAccount?.isTangem == true) {
+            TangemBridge.handler?.cancel()
+        }
         super.onDestroy()
 
         if (!isConfirmed) connectReject()

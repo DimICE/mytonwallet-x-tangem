@@ -58,6 +58,7 @@ import org.mytonwallet.app_air.walletbasecontext.theme.color
 import org.mytonwallet.app_air.walletbasecontext.utils.replaceSpacesWithNbsp
 import org.mytonwallet.app_air.walletcontext.globalStorage.WGlobalStorage
 import org.mytonwallet.app_air.walletcontext.utils.CoinUtils
+import org.mytonwallet.app_air.walletcore.TangemBridge
 import org.mytonwallet.app_air.walletcore.models.MBridgeError
 import org.mytonwallet.app_air.walletcore.moshi.MApiSubmitTransferOptions
 import org.mytonwallet.app_air.walletcore.stores.AccountStore
@@ -303,13 +304,19 @@ class SendConfirmVC(
             if (ignoreSideGuttering) setHorizontalPadding(0f)
         }
 
-    private val confirmButton by lazy {
+    private val confirmButton: WButton by lazy {
         WButton(context, WButton.Type.PRIMARY).apply {
             id = View.generateViewId()
             text = LocaleController.getString("Confirm")
             setOnClickListener {
-                if (AccountStore.activeAccount?.isHardware == true) {
+                if (AccountStore.activeAccount?.isLedger == true) {
                     confirmHardware(transferOptions)
+                } else if (AccountStore.activeAccount?.isTangem == true) {
+                    val submit = task ?: return@setOnClickListener
+                    isAutoConfirmSubmitting = true
+                    view.lockView()
+                    confirmButton.isLoading = true
+                    submit("")
                 } else {
                     confirmWithPassword()
                 }
@@ -577,6 +584,13 @@ class SendConfirmVC(
     fun onSubmissionFailed(error: MBridgeError?) {
         stopAutoConfirmProgress()
         showError(error)
+    }
+
+    override fun onDestroy() {
+        if (isAutoConfirmSubmitting && AccountStore.activeAccount?.isTangem == true) {
+            TangemBridge.handler?.cancel()
+        }
+        super.onDestroy()
     }
 
     fun onSubmissionAwaitingMfa() {

@@ -230,7 +230,8 @@ object WGlobalStorage {
         byChain: JSONObject,
         name: String? = null,
         importedAt: Long?,
-        isTemporary: Boolean = false
+        isTemporary: Boolean = false,
+        hardwareWalletManufacturer: String? = null
     ) {
         val suggestedName = name ?: when {
             isTemporary -> LocaleController.getString("Wallet")
@@ -251,6 +252,13 @@ object WGlobalStorage {
             accountType,
             IGlobalStorageProvider.PERSIST_NO
         )
+        hardwareWalletManufacturer?.let {
+            globalStorageProvider.set(
+                "accounts.byId.$accountId.hardwareWalletManufacturer",
+                it,
+                IGlobalStorageProvider.PERSIST_NO
+            )
+        }
         if (importedAt != null) {
             globalStorageProvider.set(
                 "accounts.byId.$accountId.importedAt",

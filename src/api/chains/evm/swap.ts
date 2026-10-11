@@ -389,7 +389,7 @@ export async function buildOnchainSwapTransfer(
     if (request.needsApprove) {
       const account = await fetchStoredChainAccount(accountId, chain);
 
-      if (account.type === 'ledger' || account.type === 'view') {
+      if (account.type === 'ledger' || account.type === 'tangem' || account.type === 'view') {
         return { error: ApiTransactionError.UnsuccesfulTransfer };
       }
 
@@ -501,7 +501,7 @@ export async function submitOnchainSwapTransfer(
   ]);
   const account = await fetchStoredChainAccount(accountId, chain);
 
-  if (account.type === 'ledger' || account.type === 'view') {
+  if (account.type === 'ledger' || account.type === 'tangem' || account.type === 'view') {
     return { error: ApiTransactionError.UnsuccesfulTransfer };
   }
 

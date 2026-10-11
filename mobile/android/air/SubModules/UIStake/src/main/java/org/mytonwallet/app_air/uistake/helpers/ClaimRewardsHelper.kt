@@ -21,6 +21,7 @@ import org.mytonwallet.app_air.walletbasecontext.logger.Logger
 import org.mytonwallet.app_air.walletbasecontext.theme.WColor
 import org.mytonwallet.app_air.walletbasecontext.theme.color
 import org.mytonwallet.app_air.walletcore.JSWebViewBridge
+import org.mytonwallet.app_air.walletcore.TangemBridge
 import org.mytonwallet.app_air.walletcore.WalletCore
 import org.mytonwallet.app_air.walletcore.models.MBridgeError
 import org.mytonwallet.app_air.walletcore.moshi.StakingState
@@ -90,7 +91,7 @@ object ClaimRewardsHelper {
         }
 
         Logger.d(Logger.LogTag.STAKING, "claimRewards: tokenSlug=$tokenSlug")
-        if (AccountStore.activeAccount?.isHardware == true) {
+        if (AccountStore.activeAccount?.isLedger == true) {
             presentHardwareClaimRewards(
                 viewController = viewController,
                 window = window,

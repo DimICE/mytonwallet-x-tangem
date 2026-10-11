@@ -78,6 +78,7 @@ import org.mytonwallet.app_air.walletcontext.utils.lerpColor
 import org.mytonwallet.app_air.walletcore.MINT_CARD_ADDRESS
 import org.mytonwallet.app_air.walletcore.MINT_CARD_COMMENT
 import org.mytonwallet.app_air.walletcore.TONCOIN_SLUG
+import org.mytonwallet.app_air.walletcore.TangemBridge
 import org.mytonwallet.app_air.walletcore.WalletCore
 import org.mytonwallet.app_air.walletcore.WalletEvent
 import org.mytonwallet.app_air.walletcore.models.MAccount
@@ -654,6 +655,9 @@ class MintCardVC(context: Context, accountId: String? = AccountStore.activeAccou
     }
 
     override fun onDestroy() {
+        if (isAutoConfirmSubmitting && AccountStore.activeAccount?.isTangem == true) {
+            TangemBridge.handler?.cancel()
+        }
         countdownHandler.removeCallbacks(countdownTick)
         super.onDestroy()
         Handler(Looper.getMainLooper()).post {
@@ -1016,8 +1020,14 @@ class MintCardVC(context: Context, accountId: String? = AccountStore.activeAccou
 
     private fun startMinting(account: MAccount, cardInfo: MCardInfo) {
         val startedAt = System.currentTimeMillis()
-        if (account.isHardware) {
+        if (account.isLedger) {
             mintWithHardware(account, cardInfo, startedAt)
+        } else if (account.isTangem) {
+            flowNav = null
+            isAutoConfirmSubmitting = true
+            view.lockView()
+            upgradeButton.isLoading = true
+            submitMintWithToken(cardInfo, startedAt, "")
         } else {
             mintWithPassword(cardInfo, startedAt)
         }

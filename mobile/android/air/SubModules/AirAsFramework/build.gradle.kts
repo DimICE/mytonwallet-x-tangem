@@ -38,6 +38,7 @@ dependencies {
     implementation(project("$airSubModulePath:UIInAppBrowser"))
     implementation(project("$airSubModulePath:UISwap"))
     implementation(project("$airSubModulePath:Ledger"))
+    implementation(project("$airSubModulePath:Tangem"))
     implementation(project("$airSubModulePath:QRScan"))
     implementation(project("$airSubModulePath:UIWidgetsConfigurations"))
     implementation(project("$airSubModulePath:NativeEnclave"))

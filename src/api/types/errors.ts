@@ -45,6 +45,18 @@ export enum ApiHardwareError {
   WrongDevice = 'WrongDevice',
 }
 
+export enum ApiTangemError {
+  Cancelled = 'TangemCancelled',
+  Unavailable = 'TangemUnavailable',
+  Busy = 'TangemBusy',
+  WrongCard = 'TangemWrongCard',
+  UnsupportedCard = 'TangemUnsupportedCard',
+  InvalidSignature = 'TangemInvalidSignature',
+  InvalidWallet = 'TangemInvalidWallet',
+  UnsupportedOperation = 'TangemUnsupportedOperation',
+  Failed = 'TangemFailed',
+}
+
 export enum ApiTokenImportError {
   AddressDoesNotExist = 'AddressDoesNotExist',
   NotATokenAddress = 'NotATokenAddress',
@@ -67,6 +79,7 @@ export type ApiAnyDisplayError =
   | ApiTransactionDraftError
   | ApiTransactionError
   | ApiHardwareError
+  | ApiTangemError
   | ApiTokenImportError
   | ApiSwapError
   | EvmSmartAccountError;

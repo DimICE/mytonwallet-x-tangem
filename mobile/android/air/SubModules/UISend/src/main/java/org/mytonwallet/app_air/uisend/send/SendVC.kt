@@ -1046,10 +1046,10 @@ class SendVC(
                 isSell = isSell,
                 shouldRequireFreshAuth = shouldRequireFreshAuth
             )
-            val isHardware = AccountStore.activeAccount?.isHardware == true
+            val isLedger = AccountStore.activeAccount?.isLedger == true
             vc.setNextTask { passcode ->
                 lifecycleScope.launch {
-                    if (isHardware) {
+                    if (isLedger) {
                         // Sent using LedgerConnect
                     } else {
                         // Send with passcode

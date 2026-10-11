@@ -273,7 +273,8 @@ class WalletVersionsVC(context: Context) :
                 accountType = importedAccount.accountType.value,
                 importedAccount.byChain.jsonObject,
                 name = importedAccount.name,
-                importedAt = importedAccount.importedAt
+                importedAt = importedAccount.importedAt,
+                hardwareWalletManufacturer = sourceAccount.hardwareWalletManufacturer?.value
             )
             AirPushNotifications.subscribe(importedAccount, ignoreIfLimitReached = true)
             AccountStore.refreshMfaIfPossible(listOf(importedAccountId), null)

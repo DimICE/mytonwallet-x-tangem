@@ -5,6 +5,7 @@ import '../../../util/bigintPatch';
 import { beginCell } from '@ton/core';
 
 import type { ApiSubmitGaslessTransferOptions } from '../../types';
+import { ApiTangemError } from '../../types';
 
 import { sendExternal } from './util/sendExternal';
 import { getSigner } from './util/signer';
@@ -112,6 +113,21 @@ describe('submitGaslessTransfer secret reads', () => {
     await submitGaslessTransfer(buildTransferOptions());
 
     expect(getSigner).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ApiTangemError.Cancelled, ApiTangemError.WrongCard, ApiTangemError.InvalidSignature, ApiTangemError.Failed,
+  ])('does not broadcast after a Tangem signer returns %s', async (error) => {
+    jest.mocked(fetchStoredChainAccount).mockResolvedValue({
+      type: 'tangem',
+      tangem: { cardId: 'card-1', walletPublicKey: '00'.repeat(32) },
+      byChain: { ton: { address: FROM_ADDRESS, version: 'W5', publicKey: '00'.repeat(32) } },
+    });
+    jest.mocked(getSigner).mockReturnValue({
+      ...createStubSigner(), signTransactions: jest.fn(() => Promise.resolve({ error })),
+    });
+    expect(await submitGaslessTransfer(buildTransferOptions())).toEqual({ error });
+    expect(sendExternal).not.toHaveBeenCalled();
   });
 
   // The user-visible failure: the session dies with the first read, so a second read surfaces as

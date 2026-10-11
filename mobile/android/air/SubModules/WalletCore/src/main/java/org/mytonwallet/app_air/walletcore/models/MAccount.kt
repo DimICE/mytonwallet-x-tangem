@@ -24,7 +24,8 @@ class MAccount(
     var name: String,
     var accountType: AccountType,
     var importedAt: Long?,
-    var isTemporary: Boolean
+    var isTemporary: Boolean,
+    var hardwareWalletManufacturer: HardwareWalletManufacturer? = null
 ) {
 
     override fun equals(other: Any?): Boolean =
@@ -38,7 +39,8 @@ class MAccount(
         val domain: String? = null,
         val isMultisig: Boolean? = null,
         val derivation: ApiDerivation? = null,
-        val mfa: AccountMfa? = null
+        val mfa: AccountMfa? = null,
+        val version: String? = null
     ) {
         val jsonObject: JSONObject
             get() {
@@ -48,6 +50,7 @@ class MAccount(
                     put("isMultisig", isMultisig)
                     derivation?.let { put("derivation", it.toJSONObject()) }
                     mfa?.let { put("mfa", it.jsonObject) }
+                    version?.let { put("version", it) }
                 }
             }
     }
@@ -60,6 +63,17 @@ class MAccount(
 
         companion object {
             fun fromValue(value: String): AccountType? = entries.find { it.value == value }
+        }
+    }
+
+    @JsonClass(generateAdapter = false)
+    enum class HardwareWalletManufacturer(val value: String) {
+        LEDGER("ledger"),
+        TANGEM("tangem");
+
+        companion object {
+            fun fromValue(value: String): HardwareWalletManufacturer? =
+                entries.find { it.value == value }
         }
     }
 
@@ -101,7 +115,13 @@ class MAccount(
         globalJSON.optString("title"),
         AccountType.fromValue(globalJSON.optString("type")) ?: AccountType.MNEMONIC,
         globalJSON.optLong("importedAt"),
-        globalJSON.optBoolean("isTemporary")
+        globalJSON.optBoolean("isTemporary"),
+        HardwareWalletManufacturer.fromValue(globalJSON.optString("hardwareWalletManufacturer"))
+            ?: if (globalJSON.optString("type") == AccountType.HARDWARE.value) {
+                HardwareWalletManufacturer.LEDGER
+            } else {
+                null
+            }
     )
 
     companion object {
@@ -117,7 +137,8 @@ class MAccount(
                     derivation = chainData.optJSONObject("derivation")?.let {
                         ApiDerivation.fromJSONObject(it)
                     },
-                    mfa = chainData.optJSONObject("mfa")?.let { AccountMfa.fromJson(it) }
+                    mfa = chainData.optJSONObject("mfa")?.let { AccountMfa.fromJson(it) },
+                    version = chainData.optString("version").takeIf { it.isNotEmpty() }
                 )
             }
             return result
@@ -145,6 +166,7 @@ class MAccount(
                     accountChain.isMultisig?.let { put("isMultisig", it) }
                     accountChain.derivation?.let { put("derivation", it.toJSONObject()) }
                     accountChain.mfa?.let { put("mfa", it.jsonObject) }
+                    accountChain.version?.let { put("version", it) }
                 }
                 json.put(chainName, chain)
             }
@@ -156,6 +178,12 @@ class MAccount(
         get() {
             return accountType == AccountType.HARDWARE
         }
+
+    val isLedger: Boolean
+        get() = isHardware && hardwareWalletManufacturer != HardwareWalletManufacturer.TANGEM
+
+    val isTangem: Boolean
+        get() = isHardware && hardwareWalletManufacturer == HardwareWalletManufacturer.TANGEM
 
     val tonAddress: String?
         get() {

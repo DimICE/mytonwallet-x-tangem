@@ -256,6 +256,16 @@ sealed class ApiMethod<T> {
                 .build()
         }
 
+        class ImportTangemAccount(network: MBlockchainNetwork, options: JSONObject) :
+            ApiMethod<MImportedWalletResponse>() {
+            override val name: String = "importTangemAccount"
+            override val type: Type = MImportedWalletResponse::class.java
+            override val arguments: String = ArgumentsBuilder()
+                .string(network.value)
+                .jsonObject(options)
+                .build()
+        }
+
         class ImportViewAccount(
             network: MBlockchainNetwork,
             addressByChain: Map<MBlockchain, String>

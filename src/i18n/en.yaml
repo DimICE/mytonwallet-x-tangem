@@ -2,6 +2,23 @@ $auth_intro: |
   **Securely** store crypto and make blockchain
   payments at the **speed of light**.
 Create New Wallet: Create New Wallet
+TangemCancelled: NFC session canceled.
+TangemUnavailable: Enable NFC on an Android device to use Tangem.
+TangemBusy: Another Tangem session is in progress.
+TangemWrongCard: Scan the Tangem card used to add this wallet.
+TangemUnsupportedCard: This card has no available Ed25519 key or does not support the selected derivation path.
+TangemInvalidSignature: The Tangem signature could not be verified. Nothing was sent.
+TangemInvalidWallet: The key, derivation path or wallet version does not match the selected TON address.
+TangemUnsupportedOperation: This operation is not supported for this Tangem wallet.
+TangemFailed: The Tangem operation failed. Try scanning the card again.
+Scan Tangem Card: Scan Tangem Card
+Automatic: Automatic
+Custom: Custom
+Card key without derivation: Card key without derivation
+Derivation path: Derivation path
+Wallet version: Wallet version
+Existing TON address: Existing TON address
+Use the same derivation path and wallet version as in Tangem to access your existing address.: Use the same derivation path and wallet version as in Tangem to access your existing address.
 Import From %count% Secret Words: Import From %count% Secret Words
 More about %app_name%: More about %app_name%
 Creating Wallet...: Creating Wallet...

@@ -66,6 +66,7 @@ import org.mytonwallet.app_air.walletbasecontext.theme.ViewConstants
 import org.mytonwallet.app_air.walletbasecontext.theme.WColor
 import org.mytonwallet.app_air.walletbasecontext.theme.color
 import org.mytonwallet.app_air.walletbasecontext.utils.ApplicationContextHolder
+import org.mytonwallet.app_air.walletcore.TangemBridge
 import org.mytonwallet.app_air.walletcore.WalletCore
 import org.mytonwallet.app_air.walletcore.WalletEvent
 import org.mytonwallet.app_air.walletcore.helpers.DappDeeplinkReturnTracker
@@ -436,9 +437,16 @@ class TonConnectRequestSendVC(
                 )
                 return@setOnClickListener
             }
-            if (AccountStore.activeAccount?.isHardware == true) {
+            if (AccountStore.activeAccount?.isLedger == true) {
                 recordAcceptance()
                 confirmHardware()
+            } else if (AccountStore.accountById(update?.accountId)?.isTangem == true) {
+                val request = update ?: return@setOnClickListener
+                recordAcceptance()
+                isAutoConfirmSubmitting = true
+                view.lockView()
+                confirmButtonView.isLoading = true
+                viewModel?.accept(request.promiseId, "")
             } else {
                 confirmPasscode()
             }
@@ -834,6 +842,11 @@ class TonConnectRequestSendVC(
     }
 
     override fun onDestroy() {
+        if (isAutoConfirmSubmitting &&
+            AccountStore.accountById(update?.accountId)?.isTangem == true
+        ) {
+            TangemBridge.handler?.cancel()
+        }
         isShowingSkeleton = false
         skeletonView.onDestroy()
         super.onDestroy()

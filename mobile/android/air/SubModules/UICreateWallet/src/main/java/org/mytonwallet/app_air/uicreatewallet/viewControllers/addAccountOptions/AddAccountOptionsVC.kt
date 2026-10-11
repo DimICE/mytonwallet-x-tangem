@@ -21,6 +21,7 @@ import org.mytonwallet.app_air.uicomponents.widgets.setBackgroundColor
 import org.mytonwallet.app_air.uicomponents.widgets.unlockView
 import org.mytonwallet.app_air.uicreatewallet.viewControllers.importViewWallet.ImportViewWalletVC
 import org.mytonwallet.app_air.uicreatewallet.viewControllers.importWallet.ImportWalletVC
+import org.mytonwallet.app_air.uicreatewallet.viewControllers.tangem.TangemImportVC
 import org.mytonwallet.app_air.uicreatewallet.viewControllers.wordDisplay.WordDisplayVC
 import org.mytonwallet.app_air.uipasscode.ProtectedActionAuth
 import org.mytonwallet.app_air.uipasscode.viewControllers.passcodeConfirm.PasscodeConfirmVC
@@ -242,6 +243,28 @@ class AddAccountOptionsVC(
         )
     }
 
+    private val tangemRow = SettingsItemCell(
+        context,
+        64f,
+        SettingsItemCell.SIMPLE_ROW_HEIGHT
+    ).apply {
+        configure(
+            item = SettingsItem(
+                SettingsItem.Identifier.NONE,
+                org.mytonwallet.app_air.icons.R.drawable.ic_add_tangem,
+                "Tangem",
+                LocaleController.getString("Connect your hardware wallet"),
+                value = null,
+                hasTintColor = false
+            ),
+            subtitle = null,
+            isFirst = true,
+            isLast = true,
+            isEnabled = true,
+            onTap = { handlePush(TangemImportVC(context, network)) }
+        )
+    }
+
     private val scrollingContentView: WView by lazy {
         WView(context).apply {
             if (showCreateButton) {
@@ -252,6 +275,7 @@ class AddAccountOptionsVC(
             }
             addView(secretWordsRow, FrameLayout.LayoutParams(0, WRAP_CONTENT))
             addView(ledgerRow, FrameLayout.LayoutParams(0, WRAP_CONTENT))
+            addView(tangemRow, FrameLayout.LayoutParams(0, WRAP_CONTENT))
             addView(viewRow, FrameLayout.LayoutParams(0, WRAP_CONTENT))
 
             setConstraints {
@@ -268,7 +292,9 @@ class AddAccountOptionsVC(
                 toCenterX(secretWordsRow, ViewConstants.HORIZONTAL_PADDINGS.toFloat())
                 topToBottom(ledgerRow, secretWordsRow)
                 toCenterX(ledgerRow, ViewConstants.HORIZONTAL_PADDINGS.toFloat())
-                topToBottom(viewRow, ledgerRow, 16f)
+                topToBottom(tangemRow, ledgerRow, 16f)
+                toCenterX(tangemRow, ViewConstants.HORIZONTAL_PADDINGS.toFloat())
+                topToBottom(viewRow, tangemRow, 16f)
                 toCenterX(viewRow, ViewConstants.HORIZONTAL_PADDINGS.toFloat())
                 toBottomPx(
                     viewRow,

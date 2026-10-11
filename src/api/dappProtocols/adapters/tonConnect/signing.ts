@@ -13,6 +13,13 @@ export async function signTonProofWithPrivateKey(
   privateKey: Uint8Array,
   proof: TonConnectProof,
 ): Promise<Uint8Array> {
+  return nacl.sign.detached(await getTonProofHash(walletAddress, proof), privateKey);
+}
+
+export async function getTonProofHash(
+  walletAddress: string | Address,
+  proof: TonConnectProof,
+): Promise<Uint8Array> {
   const { timestamp, domain, payload } = proof;
   const address = walletAddress instanceof Address ? walletAddress : Address.parse(walletAddress);
 
@@ -30,10 +37,7 @@ export async function signTonProofWithPrivateKey(
     Buffer.from(await sha256(messageBuffer)),
   ]);
 
-  return nacl.sign.detached(
-    new Uint8Array(await sha256(bufferToSign)),
-    privateKey,
-  );
+  return new Uint8Array(await sha256(bufferToSign));
 }
 
 /**
@@ -46,13 +50,20 @@ export async function signDataWithPrivateKey(
   payload: SignDataPayload,
   privateKey: Uint8Array,
 ): Promise<Uint8Array> {
+  return nacl.sign.detached(await getSignDataHash(walletAddress, timestamp, domain, payload), privateKey);
+}
+
+export async function getSignDataHash(
+  walletAddress: string | Address,
+  timestamp: number,
+  domain: string,
+  payload: SignDataPayload,
+): Promise<Uint8Array> {
   const address = walletAddress instanceof Address ? walletAddress : Address.parse(walletAddress);
 
-  const hash = await (payload.type === 'cell'
+  return payload.type === 'cell'
     ? createCellDataHash(address, timestamp, domain, payload)
-    : createTextDataHash(address, timestamp, domain, payload));
-
-  return nacl.sign.detached(hash, privateKey);
+    : createTextDataHash(address, timestamp, domain, payload);
 }
 
 // https://docs.tonconsole.com/academy/sign-data#for-cell

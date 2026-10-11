@@ -40,6 +40,7 @@ import org.mytonwallet.app_air.walletbasecontext.utils.formatDateAndTime
 import org.mytonwallet.app_air.walletbasecontext.utils.smartDecimalsCount
 import org.mytonwallet.app_air.walletbasecontext.utils.toString
 import org.mytonwallet.app_air.walletcore.TONCOIN_SLUG
+import org.mytonwallet.app_air.walletcore.TangemBridge
 import org.mytonwallet.app_air.walletcore.WalletCore
 import org.mytonwallet.app_air.walletcore.models.MBridgeError
 import org.mytonwallet.app_air.walletcore.moshi.ApiNft
@@ -184,8 +185,13 @@ class RenewVC(context: Context, val nft: ApiNft) : WViewController(context) {
     }
 
     private fun onRenewPressed() {
-        if (AccountStore.activeAccount?.isHardware == true) {
+        if (AccountStore.activeAccount?.isLedger == true) {
             renewWithHardware()
+        } else if (AccountStore.activeAccount?.isTangem == true) {
+            val accountId = AccountStore.activeAccountId ?: return
+            renewButton.lockView()
+            renewButton.isLoading = true
+            submitRenewal(accountId, "", null)
         } else {
             renewWithPassword()
         }
@@ -335,6 +341,13 @@ class RenewVC(context: Context, val nft: ApiNft) : WViewController(context) {
                 }
             }
         )
+    }
+
+    override fun onDestroy() {
+        if (renewButton.isLoading && AccountStore.activeAccount?.isTangem == true) {
+            TangemBridge.handler?.cancel()
+        }
+        super.onDestroy()
     }
 
     private fun showSubmissionError(error: MBridgeError, passcodeNav: WNavigationController?) {

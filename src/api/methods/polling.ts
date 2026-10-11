@@ -1,6 +1,7 @@
 import type {
   ApiAccountAny,
   ApiAccountConfig,
+  ApiAccountWithChain,
   ApiActivityTimestamps,
   ApiBackendConfig,
   ApiChain,
@@ -70,6 +71,24 @@ const MFA_INTERVAL = MINUTE;
 
 /** Lets the balances of the several polled wallets arrive before the details of their new tokens are requested */
 const TOKEN_DETAILS_THROTTLE = 3 * SEC;
+
+// The runtime chain check selects the corresponding wallet. A shared signature avoids expanding
+// the intersection of every chain's account union when dispatching through a dynamic chain name.
+type ChainPollingApi = {
+  setupActivePolling(
+    accountId: string,
+    account: ApiAccountWithChain<ApiChain>,
+    onUpdate: OnApiUpdate,
+    onUpdatingStatusChange: Parameters<typeof chains.ton.setupActivePolling>[3],
+    newestActivityTimestamps: ApiActivityTimestamps,
+    shouldResetBalances?: boolean,
+  ): NoneToVoidFunction;
+  setupInactivePolling(
+    accountId: string,
+    account: ApiAccountWithChain<ApiChain>,
+    onUpdate: OnApiUpdate,
+  ): NoneToVoidFunction;
+};
 
 let onUpdate: OnApiUpdate;
 let stopCommonBackendPolling: NoneToVoidFunction | undefined;
@@ -360,7 +379,7 @@ function setupActivePolling(
 
     ...(Object.keys(chains) as (keyof typeof chains)[]).map((chain) => {
       if (doesAccountHaveChain(account, chain)) {
-        return chains[chain].setupActivePolling(
+        return (chains[chain] as ChainPollingApi).setupActivePolling(
           accountId,
           account,
           onUpdate,
@@ -576,7 +595,7 @@ function createInactiveAccountsPollingManager() {
       !NO_EXTRA_FEATURES && doesAccountHaveChain(account, 'ton') ? setupMfaPolling(accountId).stop : undefined,
       ...(Object.keys(chains) as (keyof typeof chains)[]).map((chain) => {
         if (doesAccountHaveChain(account, chain)) {
-          return chains[chain].setupInactivePolling(accountId, account, onUpdate);
+          return (chains[chain] as ChainPollingApi).setupInactivePolling(accountId, account, onUpdate);
         }
       }),
     ];

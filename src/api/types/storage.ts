@@ -90,11 +90,23 @@ export type ApiLedgerAccount = ApiBaseAccount & {
   deviceName?: string;
 };
 
+/** The key that selects a wallet on the card is distinct from its derived TON public key. */
+export type ApiTangemKey = {
+  cardId: string;
+  walletPublicKey: string;
+  derivationPath?: string;
+};
+
+export type ApiTangemAccount = ApiBaseAccount & {
+  type: 'tangem';
+  tangem: ApiTangemKey;
+};
+
 export type ApiViewAccount = ApiBaseAccount & {
   type: 'view';
 };
 
-export type ApiAccountAny = ApiBip39Account | ApiTonAccount | ApiLedgerAccount | ApiViewAccount;
+export type ApiAccountAny = ApiBip39Account | ApiTonAccount | ApiLedgerAccount | ApiTangemAccount | ApiViewAccount;
 export type ApiAccountWithMnemonic = ApiBip39Account | ApiTonAccount;
 export type ApiAccountWithChain<T extends ApiChain> = ApiAccountAny & { byChain: Record<T, ApiWalletByChain[T]> };
 

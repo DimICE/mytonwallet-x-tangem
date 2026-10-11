@@ -69,6 +69,22 @@ class BridgeCallbackRegistryTest {
     }
 
     @Test
+    fun preservesTangemImportErrorsInsteadOfReportingUnknownNetworkError() {
+        for (expected in listOf(
+            MBridgeError.Type.TANGEM_UNAVAILABLE,
+            MBridgeError.Type.TANGEM_INVALID_WALLET,
+            MBridgeError.Type.TANGEM_CANCELLED,
+            MBridgeError.Type.TANGEM_FAILED
+        )) {
+            val registry = BridgeCallbackRegistry()
+            var callbackError: MBridgeError? = null
+            registry.register(1) { _, error -> callbackError = error }
+            registry.complete(1, success = false, result = """{"error":"${expected.errorName}"}""")
+            assertSame(expected, callbackError)
+        }
+    }
+
+    @Test
     fun mapsUnknownErrorWithoutMutatingSharedValue() {
         val registry = BridgeCallbackRegistry()
         var callbackError: MBridgeError? = null

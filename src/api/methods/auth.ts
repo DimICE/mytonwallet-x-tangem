@@ -1,3 +1,5 @@
+import { Address } from '@ton/core';
+
 import type { ApiTonWalletVersion } from '../chains/ton/types';
 import type {
   ApiAccountAny,
@@ -16,12 +18,15 @@ import type {
   ApiLedgerAccountInfo,
   ApiLedgerWalletInfo,
   ApiNetwork,
+  ApiTangemAccount,
+  ApiTangemImportOptions,
+  ApiTangemWalletVersion,
   ApiTonWallet,
   ApiViewAccount,
   ApiWalletByChain,
   OnApiUpdate,
 } from '../types';
-import { ApiCommonError, ApiTransactionError } from '../types';
+import { ApiCommonError, ApiTangemError, ApiTransactionError } from '../types';
 
 import { IS_EXTENSION, IS_GRAM_WALLET } from '../../config';
 import { parseAccountId } from '../../util/account';
@@ -31,11 +36,14 @@ import { range } from '../../util/iteratees';
 import { logDebug, logDebugError } from '../../util/logs';
 import { createTaskQueue } from '../../util/schedulers';
 import { getChainBySlug } from '../../util/tokens';
+import { callWindow } from '../../util/windowProvider/connector';
 import chains from '../chains';
 // The TON backend auth token is signed from the already-decrypted mnemonic during import; it is a backend
 // concern rather than a chain capability, so it stays a direct import until it gets its own SDK group.
 import * as ton from '../chains/ton';
-import { getIsTestnetSubwalletId, getTelegramWalletInfo } from '../chains/ton/wallet';
+import {
+  getIsTestnetSubwalletId, getTelegramWalletInfo, getWalletVersionInfos, getWalletVersions, publicKeyToAddress,
+} from '../chains/ton/wallet';
 import {
   fetchStoredAccount,
   fetchStoredAccounts,
@@ -54,6 +62,7 @@ import {
   getMnemonic,
   validateBip39Mnemonic,
 } from '../common/mnemonic';
+import { isTangemDerivationPath, isTangemWalletInfo, TANGEM_TON_WALLET_VERSIONS } from '../common/tangem';
 import { sendUpdateTokens } from '../common/tokens';
 import { bytesToHex, hexToBytes } from '../common/utils';
 import { tokenRepository } from '../db';
@@ -520,6 +529,75 @@ export async function importLedgerAccount(network: ApiNetwork, accountInfo: ApiL
   return { accountId, byChain: getAccountChains(account) };
 }
 
+/** Keep the code enumerable: the Android API bridge serializes rejected promises with JSON.stringify. */
+class TangemImportError extends Error {
+  constructor(public readonly error: ApiTangemError) {
+    super(error);
+  }
+}
+
+export async function importTangemAccount(network: ApiNetwork, options: ApiTangemImportOptions) {
+  if ((options.version !== 'auto' && !TANGEM_TON_WALLET_VERSIONS.includes(options.version))
+    // null explicitly selects the card key in the native JSON protocol.
+    // eslint-disable-next-line no-null/no-null
+    || (options.derivationPath != null && !isTangemDerivationPath(options.derivationPath))) {
+    throw new TangemImportError(ApiTangemError.InvalidWallet);
+  }
+  const info = await callWindow('readTangemCard', JSON.stringify({ derivationPath: options.derivationPath }));
+  if ('error' in info) throw new TangemImportError(info.error);
+  if (!isTangemWalletInfo(info)
+    // eslint-disable-next-line no-null/no-null
+    || (options.derivationPath === null && info.derivationPath !== undefined)
+    || (typeof options.derivationPath === 'string' && options.derivationPath !== info.derivationPath)) {
+    throw new TangemImportError(ApiTangemError.InvalidWallet);
+  }
+  const publicKey = Buffer.from(info.publicKey, 'hex');
+  let version: ApiTangemWalletVersion = options.version === 'auto' ? 'v4R2' : options.version;
+  let address: string;
+  if (options.version === 'auto') {
+    const versions = [...TANGEM_TON_WALLET_VERSIONS];
+    if (options.expectedAddress) {
+      const expectedAddress = Address.parse(options.expectedAddress);
+      const match = getWalletVersions(network, publicKey, versions).find(
+        (wallet) => expectedAddress.equals(Address.parse(wallet.address)),
+      );
+      if (!match) throw new TangemImportError(ApiTangemError.InvalidWallet);
+      version = match.version as ApiTangemWalletVersion;
+      address = match.address;
+    } else {
+      const wallets = await getWalletVersionInfos(network, publicKey, versions);
+      const existingWallets = wallets.filter((wallet) => (
+        wallet.isInitialized || wallet.lastTxId || wallet.balance > 0n
+      ));
+      const selected = existingWallets.reduce<typeof wallets[number] | undefined>((best, wallet) => (
+        !best || wallet.balance > best.balance ? wallet : best
+      ), undefined);
+      version = selected?.version as ApiTangemWalletVersion | undefined ?? version;
+      address = selected?.address ?? publicKeyToAddress(
+        network, publicKey, version, getIsTestnetSubwalletId(network, version),
+      );
+    }
+  } else {
+    address = publicKeyToAddress(network, publicKey, version, getIsTestnetSubwalletId(network, version));
+  }
+  if (options.expectedAddress && !Address.parse(address).equals(Address.parse(options.expectedAddress))) {
+    throw new TangemImportError(ApiTangemError.InvalidWallet);
+  }
+  const account: ApiTangemAccount = {
+    type: 'tangem',
+    tangem: {
+      cardId: info.cardId,
+      walletPublicKey: info.walletPublicKey.toLowerCase(),
+      derivationPath: info.derivationPath,
+    },
+    byChain: {
+      ton: { address, publicKey: info.publicKey.toLowerCase(), version, index: 0 },
+    },
+  };
+  const accountId = await addAccount(network, account);
+  return { accountId, byChain: getAccountChains(account) };
+}
+
 export async function getLedgerWallets(
   chain: ApiChain,
   network: ApiNetwork,
@@ -792,6 +870,9 @@ export async function importNewWalletVersion(
 }> {
   const { network } = parseAccountId(accountId);
   const account = await fetchStoredChainAccount(accountId, 'ton');
+  if (account.type === 'tangem' && !(TANGEM_TON_WALLET_VERSIONS as readonly string[]).includes(version)) {
+    return { error: ApiTangemError.UnsupportedOperation };
+  }
   if (account.byChain.ton.version === 'telegram') {
     return { error: ApiCommonError.UnsupportedVersion };
   }

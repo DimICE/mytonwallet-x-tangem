@@ -95,7 +95,15 @@ object SpannableHelpers {
         if (account.network.isTestnet) add(walletTestnetIcon)
         when (account.accountType) {
             MAccount.AccountType.VIEW -> add(walletEyeIcon)
-            MAccount.AccountType.HARDWARE -> add(walletLedgerIcon)
+
+            MAccount.AccountType.HARDWARE -> add(
+                if (account.isTangem) {
+                    org.mytonwallet.app_air.icons.R.drawable.ic_wallet_tangem
+                } else {
+                    walletLedgerIcon
+                }
+            )
+
             else -> {}
         }
     }

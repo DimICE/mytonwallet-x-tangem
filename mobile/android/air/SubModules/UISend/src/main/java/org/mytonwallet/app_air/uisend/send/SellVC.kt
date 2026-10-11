@@ -64,6 +64,7 @@ import org.mytonwallet.app_air.walletcontext.globalStorage.WGlobalStorage
 import org.mytonwallet.app_air.walletcontext.utils.CoinUtils
 import org.mytonwallet.app_air.walletcore.JSWebViewBridge
 import org.mytonwallet.app_air.walletcore.TONCOIN_SLUG
+import org.mytonwallet.app_air.walletcore.TangemBridge
 import org.mytonwallet.app_air.walletcore.WalletCore
 import org.mytonwallet.app_air.walletcore.WalletEvent
 import org.mytonwallet.app_air.walletcore.helpers.ActivityHelpers
@@ -371,8 +372,13 @@ class SellVC(
 
     private fun onConfirmClicked() {
         val config = viewModel.getConfirmationPageConfig() ?: return
-        if (AccountStore.activeAccount?.isHardware == true) {
+        if (AccountStore.activeAccount?.isLedger == true) {
             confirmHardware(config)
+        } else if (AccountStore.activeAccount?.isTangem == true) {
+            isAutoConfirmSubmitting = true
+            view.lockView()
+            confirmButton.isLoading = true
+            onTransferConfirmed(config, "")
         } else {
             confirmWithPassword(config)
         }
@@ -476,7 +482,7 @@ class SellVC(
 
     private fun onTransferConfirmed(config: SendViewModel.DraftResult.Result, passcode: String?) {
         lifecycleScope.launch {
-            if (AccountStore.activeAccount?.isHardware == true) {
+            if (AccountStore.activeAccount?.isLedger == true) {
                 return@launch
             }
             val password = passcode ?: return@launch
@@ -748,6 +754,9 @@ class SellVC(
     }
 
     override fun onDestroy() {
+        if (isAutoConfirmSubmitting && AccountStore.activeAccount?.isTangem == true) {
+            TangemBridge.handler?.cancel()
+        }
         super.onDestroy()
         confirmButton.setOnClickListener(null)
     }

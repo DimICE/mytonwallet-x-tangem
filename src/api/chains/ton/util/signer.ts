@@ -23,6 +23,7 @@ import { signDataWithPrivateKey, signTonProofWithPrivateKey } from '../../../dap
 import { fetchPrivateKey } from '../auth';
 import { getIsTestnetSubwalletId, getTelegramWalletInfo, getTonWallet } from '../wallet';
 import * as encryption from './encryption';
+import { TangemSigner } from './tangemSigner';
 
 type ErrorResult = { error: ApiAnyDisplayError };
 
@@ -85,6 +86,10 @@ export function getSigner(
 
   if (account.type === 'ledger') {
     return new LedgerSigner(parseAccountId(accountId).network, account.byChain.ton, ledgerSubwalletId);
+  }
+
+  if (account.type === 'tangem') {
+    return new TangemSigner(account.byChain.ton, account.tangem);
   }
 
   if (enclaveToken === undefined) throw new Error('Preauthorization ID not provided');

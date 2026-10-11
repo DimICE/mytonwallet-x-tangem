@@ -42,7 +42,7 @@ export async function getAccountWithMnemonic() {
   const byId = await fetchStoredAccounts();
 
   return Object.entries(byId)
-    .find(([, { type }]) => type !== 'ledger' && type !== 'view') as [string, ApiAccountWithMnemonic] | undefined;
+    .find(([, { type }]) => type === 'ton' || type === 'bip39') as [string, ApiAccountWithMnemonic] | undefined;
 }
 
 export async function getNewAccountId(network: ApiNetwork, preferredId?: number) {

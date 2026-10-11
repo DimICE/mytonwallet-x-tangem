@@ -10,6 +10,7 @@ export * from './activities';
 export * from './notifications';
 export * from './emulation';
 export * from './ledger';
+export * from './tangem';
 export * from './transfer';
 export * from './wallet';
 export * from './portfolio';

@@ -567,6 +567,7 @@ export interface AccountChain {
 export interface Account {
   title?: string;
   type: AccountType;
+  hardwareWalletManufacturer?: 'ledger' | 'tangem';
   byChain: Partial<Record<ApiChain, AccountChain>>;
   isTemporary?: true;
   isPrivateKeyBased?: true;

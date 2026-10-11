@@ -231,6 +231,7 @@ class JSWebViewBridge(context: Context) : WebView(context) {
 
     internal fun dispose() {
         if (isDisposed) return
+        TangemBridge.handler?.cancel()
         isDisposed = true
         injecting = false
         injected = false
@@ -680,6 +681,18 @@ class JSWebViewBridge(context: Context) : WebView(context) {
                             }
                         }
                     )
+                }
+
+                "readTangemCard", "signWithTangem" -> {
+                    bridge.post {
+                        TangemBridge.request(methodName, arg0) { result ->
+                            bridge.post {
+                                bridge.evaluateJavascript(
+                                    "window.airBridge.nativeCallCallbacks[$requestNumber]?.({ok: true, result: $result})"
+                                ) {}
+                            }
+                        }
+                    }
                 }
 
                 "exchangeWithLedger" -> {

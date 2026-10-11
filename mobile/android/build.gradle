@@ -23,6 +23,12 @@ plugins {
 
 apply from: "variables.gradle"
 
+def tangemLocalProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+  localPropertiesFile.withInputStream { tangemLocalProperties.load(it) }
+}
+
 // Enable strict dependency locking at root level
 dependencyLocking {
   lockAllConfigurations()
@@ -34,6 +40,14 @@ allprojects {
     google()
     mavenCentral()
     maven { url 'https://jitpack.io' }
+    maven {
+      url 'https://maven.pkg.github.com/tangem/tangem-sdk-android'
+      credentials {
+        username = tangemLocalProperties.getProperty('gpr.user') ?: findProperty('tangemGithubUser') ?: System.getenv('TANGEM_GITHUB_USER') ?: System.getenv('GITHUB_ACTOR')
+        password = tangemLocalProperties.getProperty('gpr.key') ?: findProperty('tangemGithubToken') ?: System.getenv('TANGEM_GITHUB_TOKEN') ?: System.getenv('GITHUB_TOKEN')
+      }
+      content { includeGroup 'com.tangem.tangem-sdk-kotlin' }
+    }
   }
 
   // Enable dependency locking for all configurations

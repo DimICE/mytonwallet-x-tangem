@@ -41,6 +41,7 @@ import org.mytonwallet.app_air.walletbasecontext.theme.WColor
 import org.mytonwallet.app_air.walletbasecontext.theme.color
 import org.mytonwallet.app_air.walletcore.TONCOIN_SLUG
 import org.mytonwallet.app_air.walletcore.TON_CHAIN
+import org.mytonwallet.app_air.walletcore.TangemBridge
 import org.mytonwallet.app_air.walletcore.WalletCore
 import org.mytonwallet.app_air.walletcore.WalletEvent
 import org.mytonwallet.app_air.walletcore.models.AccountMfa
@@ -63,6 +64,7 @@ class MfaVC(context: Context) :
     private val viewModel = MfaFlowViewModel(AccountStore.activeAccountId!!)
 
     private var pollingJob: Job? = null
+    private var isTangemSigning = false
     private var stateCollectorJob: Job? = null
 
     // Animation
@@ -373,6 +375,37 @@ class MfaVC(context: Context) :
         task: suspend (String) -> Unit
     ) {
         if (navigationController?.viewControllers?.lastOrNull() !== this) return
+        if (AccountStore.activeAccount?.isTangem == true) {
+            showAlert(
+                title = titleText,
+                text = user.name + (user.username?.let { " (@$it)" } ?: ""),
+                button = LocaleController.getString("Confirm"),
+                buttonPressed = {
+                    if (!isTangemSigning) {
+                        isTangemSigning = true
+                        primaryButton.isLoading = true
+                        CoroutineScope(Dispatchers.Main).launch {
+                            try {
+                                task("")
+                                onSuccess()
+                            } catch (e: Throwable) {
+                                if (!isDestroyed) {
+                                    showAlert(
+                                        null,
+                                        e.localizedMessage ?: e.toString()
+                                    )
+                                }
+                            } finally {
+                                isTangemSigning = false
+                                if (!isDestroyed) primaryButton.isLoading = false
+                            }
+                        }
+                    }
+                },
+                secondaryButton = LocaleController.getString("Cancel")
+            )
+            return
+        }
         val headerView = MfaConfirmHeaderView(
             context,
             titleText,
@@ -426,6 +459,7 @@ class MfaVC(context: Context) :
     }
 
     override fun onDestroy() {
+        if (isTangemSigning) TangemBridge.handler?.cancel()
         stopPolling()
         stateCollectorJob?.cancel()
         stateCollectorJob = null

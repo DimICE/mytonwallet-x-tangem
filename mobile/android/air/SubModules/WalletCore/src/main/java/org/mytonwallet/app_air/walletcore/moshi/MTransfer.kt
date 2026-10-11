@@ -273,7 +273,34 @@ enum class MApiAnyDisplayError {
     WRONG_ADDRESS,
 
     @Json(name = "WrongNetwork")
-    WRONG_NETWORK;
+    WRONG_NETWORK,
+
+    @Json(name = "TangemCancelled")
+    TANGEM_CANCELLED,
+
+    @Json(name = "TangemUnavailable")
+    TANGEM_UNAVAILABLE,
+
+    @Json(name = "TangemBusy")
+    TANGEM_BUSY,
+
+    @Json(name = "TangemWrongCard")
+    TANGEM_WRONG_CARD,
+
+    @Json(name = "TangemUnsupportedCard")
+    TANGEM_UNSUPPORTED_CARD,
+
+    @Json(name = "TangemInvalidSignature")
+    TANGEM_INVALID_SIGNATURE,
+
+    @Json(name = "TangemInvalidWallet")
+    TANGEM_INVALID_WALLET,
+
+    @Json(name = "TangemUnsupportedOperation")
+    TANGEM_UNSUPPORTED_OPERATION,
+
+    @Json(name = "TangemFailed")
+    TANGEM_FAILED;
 
     val toErrorDialogMessage: String?
         get() {
@@ -339,6 +366,24 @@ enum class MApiAnyDisplayError {
                     CONNECTION_BROKEN -> "\$ledger_connection_broken"
 
                     WRONG_DEVICE -> "\$ledger_wrong_device"
+
+                    TANGEM_CANCELLED -> "TangemCancelled"
+
+                    TANGEM_UNAVAILABLE -> "TangemUnavailable"
+
+                    TANGEM_BUSY -> "TangemBusy"
+
+                    TANGEM_WRONG_CARD -> "TangemWrongCard"
+
+                    TANGEM_UNSUPPORTED_CARD -> "TangemUnsupportedCard"
+
+                    TANGEM_INVALID_SIGNATURE -> "TangemInvalidSignature"
+
+                    TANGEM_INVALID_WALLET -> "TangemInvalidWallet"
+
+                    TANGEM_UNSUPPORTED_OPERATION -> "TangemUnsupportedOperation"
+
+                    TANGEM_FAILED -> "TangemFailed"
 
                     // ADDRESS_DOES_NOT_EXIST -> "Address doesn't exist"
                     NOT_A_TOKEN_ADDRESS -> "The address is not a token minter address"

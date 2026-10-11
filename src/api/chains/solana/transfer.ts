@@ -345,7 +345,7 @@ export async function submitGasfullTransfer(
     const client = getSolanaClient(network);
 
     const account = await fetchStoredChainAccount(accountId, 'solana');
-    if (account.type === 'ledger') throw new Error('Not supported by Ledger accounts');
+    if (account.type === 'ledger' || account.type === 'tangem') throw new Error('Not supported by Ledger accounts');
     if (account.type === 'view') throw new Error('Not supported by View accounts');
 
     const { address } = account.byChain.solana;

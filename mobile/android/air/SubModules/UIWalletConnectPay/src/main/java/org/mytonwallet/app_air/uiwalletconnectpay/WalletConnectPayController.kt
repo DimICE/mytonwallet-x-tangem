@@ -118,7 +118,7 @@ class WalletConnectPayController(private val window: WWindow) : WalletCore.Updat
         var confirmed = false
         val onCancel = { if (!confirmed) cancel(update.promiseId) }
 
-        if (account.isHardware) {
+        if (account.isLedger) {
             val tonAddress =
                 checkNotNull(account.tonAddress) { "Hardware account without TON address" }
             val ledgerVC = LedgerConnectVC(
@@ -213,7 +213,7 @@ class WalletConnectPayController(private val window: WWindow) : WalletCore.Updat
     ) {
         val title = LocaleController.getString("Sign Data")
 
-        if (account.isHardware) {
+        if (account.isLedger) {
             val tonAddress =
                 checkNotNull(account.tonAddress) { "Hardware account without TON address" }
             val ledgerVC = LedgerConnectVC(

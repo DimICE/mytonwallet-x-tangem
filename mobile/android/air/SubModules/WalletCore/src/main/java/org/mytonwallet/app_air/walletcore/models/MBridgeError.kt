@@ -39,6 +39,15 @@ sealed interface MBridgeError {
         PROOF_TOO_LARGE("ProofTooLarge"),
         CONNECTION_BROKEN("ConnectionBroken"),
         WRONG_DEVICE("WrongDevice"),
+        TANGEM_CANCELLED("TangemCancelled"),
+        TANGEM_UNAVAILABLE("TangemUnavailable"),
+        TANGEM_BUSY("TangemBusy"),
+        TANGEM_WRONG_CARD("TangemWrongCard"),
+        TANGEM_UNSUPPORTED_CARD("TangemUnsupportedCard"),
+        TANGEM_INVALID_SIGNATURE("TangemInvalidSignature"),
+        TANGEM_INVALID_WALLET("TangemInvalidWallet"),
+        TANGEM_UNSUPPORTED_OPERATION("TangemUnsupportedOperation"),
+        TANGEM_FAILED("TangemFailed"),
         WRONG_ADDRESS("WrongAddress"),
         WRONG_NETWORK("WrongNetwork"),
         INVALID_ADDRESS("InvalidAddress"),
@@ -163,6 +172,16 @@ sealed interface MBridgeError {
                 Type.CONNECTION_BROKEN -> LocaleController.getString("\$ledger_connection_broken")
 
                 Type.WRONG_DEVICE -> LocaleController.getString("\$ledger_wrong_device")
+
+                Type.TANGEM_CANCELLED,
+                Type.TANGEM_UNAVAILABLE,
+                Type.TANGEM_BUSY,
+                Type.TANGEM_WRONG_CARD,
+                Type.TANGEM_UNSUPPORTED_CARD,
+                Type.TANGEM_INVALID_SIGNATURE,
+                Type.TANGEM_INVALID_WALLET,
+                Type.TANGEM_UNSUPPORTED_OPERATION,
+                Type.TANGEM_FAILED -> LocaleController.getString(type.errorName!!)
 
                 Type.WRONG_ADDRESS -> LocaleController.getString("WrongAddress")
 
